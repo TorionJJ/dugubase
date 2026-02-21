@@ -2966,5 +2966,1162 @@
             }
         });
     </script>
+    <!-- ===== АДМИН-ПАНЕЛЬ И ФОРУМ ===== -->
+<style>
+    /* Стили для админ-панели и форума */
+    .admin-login-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: #b7e4c7;
+        border: 1px solid #b7e4c7;
+        padding: 5px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9em;
+        margin-left: 20px;
+        transition: all 0.3s;
+    }
+    .admin-login-btn:hover { background: #52b788; color: white; border-color: white; }
+    
+    .login-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    .login-modal.show { display: flex; }
+    .login-box {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        border: 5px solid #52b788;
+    }
+    .login-tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+    .login-tab {
+        flex: 1;
+        padding: 10px;
+        background: #d8f3dc;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .login-tab.active { background: #52b788; color: white; }
+    .login-form { display: block; }
+    .login-form.hide { display: none; }
+    .login-box h2 { margin-bottom: 30px; color: #1b4332; }
+    .login-box input, .login-box select {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 3px solid #b7e4c7;
+        border-radius: 10px;
+        font-size: 1.1em;
+    }
+    .login-box button {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .login-box button:hover { background: #1b4332; }
+    .login-error { color: #e53e3e; margin-top: 15px; display: none; }
+    .login-success { color: #2d6a4f; margin-top: 15px; display: none; }
+    
+    .admin-panel {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1500;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    .admin-panel.show { display: block; }
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        position: relative;
+    }
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #b7e4c7;
+    }
+    .admin-header h2 { margin: 0; border: none; }
+    .admin-close {
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 2em;
+        cursor: pointer;
+    }
+    .admin-view-btn {
+        background: #52b788;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-right: 10px;
+    }
+    .admin-tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+    .admin-tab {
+        padding: 12px 25px;
+        background: #d8f3dc;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #1b4332;
+    }
+    .admin-tab.active { background: #52b788; color: white; }
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; }
+    
+    .tree { margin-top: 20px; }
+    .tree-folder { background: #f0fff4; border: 2px solid #b7e4c7; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+    .tree-folder-header {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
+        padding: 15px 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .tree-folder-header:hover { background: #1b4332; }
+    .tree-folder-header .arrow { font-size: 1.2em; transition: transform 0.3s; }
+    .tree-folder-header.collapsed .arrow { transform: rotate(-90deg); }
+    .tree-folder-content { padding: 20px; background: white; }
+    .tree-folder-content.collapsed { display: none; }
+    .tree-item {
+        background: #f8fff9;
+        border: 2px solid #b7e4c7;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    .tree-item:hover { border-color: #52b788; }
+    .tree-item-header { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .tree-item-header .preview {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        background: #d8f3dc;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .tree-item-header .preview img { width: 100%; height: 100%; object-fit: cover; }
+    .tree-item-header .title { font-weight: 600; color: #1b4332; flex: 1; }
+    .tree-item-content {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px dashed #b7e4c7;
+        display: none;
+    }
+    .tree-item-content.expanded { display: block; }
+    .tree-item-content textarea {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #b7e4c7;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        min-height: 60px;
+        font-family: inherit;
+    }
+    .tree-item-content select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #b7e4c7;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .tree-item-content input[type="file"] { margin-bottom: 10px; }
+    .tree-item-content button {
+        background: #52b788;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    .tree-item-content button:hover { background: #2d6a4f; }
+    .tree-item-content .delete-btn { background: #ff6b6b; }
+    .tree-item-content .delete-btn:hover { background: #e53e3e; }
+    
+    .add-form {
+        background: #f0fff4;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        border: 3px solid #b7e4c7;
+    }
+    .add-form h3 { color: #1b4332; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: 600; color: #1b4332; margin-bottom: 5px; }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #b7e4c7;
+        border-radius: 8px;
+        font-family: inherit;
+    }
+    .form-group textarea { min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn {
+        background: #52b788;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+    .btn:hover { background: #2d6a4f; }
+    .btn-danger { background: #ff6b6b; }
+    .btn-danger:hover { background: #e53e3e; }
+    
+    .admins-list {
+        background: #f0fff4;
+        padding: 20px;
+        border-radius: 15px;
+        border: 3px solid #b7e4c7;
+        margin-bottom: 30px;
+    }
+    .admin-card {
+        background: white;
+        border: 2px solid #b7e4c7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .admin-card .admin-info { display: flex; align-items: center; gap: 15px; }
+    .admin-card .admin-avatar {
+        width: 40px;
+        height: 40px;
+        background: #52b788;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    .admin-card .admin-name { font-weight: 600; color: #1b4332; }
+    .admin-card .admin-role { color: #666; font-size: 0.9em; }
+    .admin-card .admin-permissions { font-size: 0.85em; color: #2d6a4f; }
+    .admin-card .remove-admin {
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    .requests-list {
+        background: #f0fff4;
+        padding: 20px;
+        border-radius: 15px;
+        border: 3px solid #ffc107;
+        margin-bottom: 30px;
+    }
+    .request-card {
+        background: white;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .request-card .request-info { flex: 1; }
+    .request-card .request-name { font-weight: 600; color: #1b4332; margin-bottom: 5px; }
+    .request-card .request-login { color: #666; font-size: 0.9em; }
+    .request-card .request-actions { display: flex; gap: 10px; }
+    .request-card .approve-btn { background: #52b788; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+    .request-card .reject-btn { background: #ff6b6b; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+    
+    .sections-list {
+        background: #f0fff4;
+        padding: 20px;
+        border-radius: 15px;
+        border: 3px solid #b7e4c7;
+    }
+    .section-card {
+        background: white;
+        border: 2px solid #b7e4c7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .section-card .section-info { display: flex; align-items: center; gap: 15px; }
+    .section-card .section-emoji { font-size: 2em; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .section-card .section-name { font-weight: 600; color: #1b4332; }
+    .section-card .section-id { color: #666; font-size: 0.9em; }
+    .section-card .delete-section {
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #2d6a4f;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        z-index: 2000;
+        animation: slideInRight 0.3s;
+    }
+    @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .admin-badge { background: #52b788; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-left: 10px; }
+    .max-admins-warning { background: #fff4d6; border-left: 5px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+    
+    /* Стили для форума */
+    .forum-section {
+        background: #f0fff4;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 30px 0;
+        border: 3px solid #b7e4c7;
+    }
+    .forum-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+    .forum-tabs { display: flex; gap: 10px; }
+    .forum-tab { padding: 8px 16px; background: #d8f3dc; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; color: #1b4332; }
+    .forum-tab.active { background: #52b788; color: white; }
+    .forum-messages { max-height: 500px; overflow-y: auto; margin-bottom: 20px; padding: 10px; background: white; border-radius: 10px; }
+    .forum-message {
+        background: #f8fff9;
+        border: 2px solid #b7e4c7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    .forum-message.unread { border-left: 5px solid #ffc107; background: #fff9e6; }
+    .forum-message-header { display: flex; justify-content: space-between; margin-bottom: 10px; color: #1b4332; font-weight: 600; flex-wrap: wrap; }
+    .forum-message-nick { color: #2d6a4f; }
+    .forum-message-nick.admin { background: #52b788; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; }
+    .forum-message-date { font-size: 0.85em; color: #666; }
+    .forum-message-text { line-height: 1.5; }
+    .forum-message-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+    .forum-message-actions button { background: transparent; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
+    .forum-form { display: flex; flex-direction: column; gap: 10px; }
+    .forum-form input, .forum-form textarea { padding: 12px; border: 3px solid #b7e4c7; border-radius: 10px; font-size: 1em; }
+    .forum-form textarea { min-height: 100px; resize: vertical; }
+    .forum-form button {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .forum-note { font-size: 0.9em; color: #e53e3e; margin-top: 10px; font-style: italic; }
+    
+    .admin-console-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #ffc107;
+        color: #1b4332;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        display: none;
+    }
+    .admin-console-btn.visible { display: block; }
+    
+    .admin-chat {
+        background: #f0fff4;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 30px;
+        border: 3px solid #b7e4c7;
+    }
+    .admin-chat-messages { max-height: 300px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: white; border-radius: 10px; }
+    .admin-chat-message { padding: 8px; border-bottom: 1px solid #e9f5db; }
+    .admin-chat-message .sender { font-weight: bold; color: #2d6a4f; }
+    .admin-chat-message .time { font-size: 0.8em; color: #666; margin-left: 10px; }
+    .admin-chat-input { display: flex; gap: 10px; }
+    .admin-chat-input input { flex: 1; padding: 10px; border: 3px solid #b7e4c7; border-radius: 10px; }
+    .admin-chat-input button { background: #52b788; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+</style>
+
+<!-- Модальное окно входа/регистрации -->
+<div class="login-modal" id="loginModal">
+    <div class="login-box">
+        <div class="login-tabs">
+            <button class="login-tab active" onclick="switchLoginTab('login', event)">🔐 Вход</button>
+            <button class="login-tab" onclick="switchLoginTab('register', event)">📝 Регистрация</button>
+        </div>
+
+        <!-- Форма входа -->
+        <div id="login-form" class="login-form">
+            <h2>Вход для администратора</h2>
+            <input type="text" id="login-username" placeholder="Логин" onkeypress="if(event.key==='Enter') checkLogin()">
+            <input type="password" id="login-password" placeholder="Пароль" onkeypress="if(event.key==='Enter') checkLogin()">
+            <button onclick="checkLogin()">Войти</button>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" onclick="showRecoverForm(); return false;" style="color: #e53e3e; text-decoration: none; font-size: 0.9em;">🔴 Забыли пароль?</a>
+            </div>
+            <div class="login-error" id="loginError">Неверный логин или пароль!</div>
+        </div>
+
+        <!-- Форма регистрации -->
+        <div id="register-form" class="login-form hide">
+            <h2>Регистрация администратора</h2>
+            <input type="text" id="register-name" placeholder="Ваше имя" onkeypress="if(event.key==='Enter') registerRequest()">
+            <input type="text" id="register-login" placeholder="Логин (только буквы, без цифр)" onkeypress="if(event.key==='Enter') registerRequest()">
+            <input type="password" id="register-password" placeholder="Пароль (мин 4 символа, буквы и цифры)" onkeypress="if(event.key==='Enter') registerRequest()">
+            <button onclick="registerRequest()">Отправить заявку</button>
+            <div class="login-success" id="registerSuccess">Заявка отправлена! Ожидайте подтверждения.</div>
+            <div class="login-error" id="registerError"></div>
+        </div>
+
+        <!-- Форма восстановления пароля -->
+        <div id="recover-form" class="login-form hide">
+            <h2>Восстановление пароля</h2>
+            <div id="recover-step1">
+                <input type="text" id="recover-login" placeholder="Ваш логин" onkeypress="if(event.key==='Enter') checkRecoverLogin()">
+                <button onclick="checkRecoverLogin()">Далее</button>
+            </div>
+            <div id="recover-step2" style="display:none;">
+                <input type="password" id="recover-new-password" placeholder="Новый пароль" onkeypress="if(event.key==='Enter') setNewPassword()">
+                <button onclick="setNewPassword()">Сохранить</button>
+            </div>
+            <div class="login-error" id="recoverError"></div>
+            <div class="login-success" id="recoverSuccess"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Админ-панель -->
+<div class="admin-panel" id="adminPanel">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>⚡ Управление контентом <span class="admin-badge" id="adminNameDisplay"></span></h2>
+            <div class="admin-header-buttons">
+                <button class="admin-view-btn" onclick="toggleViewMode()">👁 Режим просмотра</button>
+                <button class="admin-close" onclick="closeAdminPanel()">×</button>
+            </div>
+        </div>
+        
+        <div class="admin-tabs" id="adminTabs">
+            <button class="admin-tab active" onclick="switchAdminTab('edit')">📁 Редактор</button>
+            <button class="admin-tab" onclick="switchAdminTab('sections')">📂 Разделы</button>
+            <button class="admin-tab" onclick="switchAdminTab('add')">➕ Добавить</button>
+            <button class="admin-tab" onclick="switchAdminTab('admins')">👥 Админы <span id="pendingRequestsBadge" style="display:none;">📨</span></button>
+            <button class="admin-tab" onclick="switchAdminTab('forum')">💬 Форум</button>
+        </div>
+
+        <!-- Вкладка: Редактор с деревом -->
+        <div id="admin-edit" class="admin-tab-content active">
+            <div class="tree" id="adminTree"></div>
+        </div>
+
+        <!-- Вкладка: Управление разделами -->
+        <div id="admin-sections" class="admin-tab-content">
+            <div class="add-form">
+                <h3>➕ Создать новый раздел</h3>
+                <div class="form-group">
+                    <label>Эмодзи для раздела:</label>
+                    <input type="text" id="new-section-emoji" placeholder="Например: 🌰" value="📌">
+                </div>
+                <div class="form-group">
+                    <label>Название раздела:</label>
+                    <input type="text" id="new-section-name" placeholder="Например: Орехи">
+                </div>
+                <div class="form-group">
+                    <label>ID раздела (английскими буквами):</label>
+                    <input type="text" id="new-section-id" placeholder="например: nuts">
+                </div>
+                <button class="btn" onclick="createNewSection()">✨ Создать раздел</button>
+            </div>
+            <div class="sections-list">
+                <h3>📂 Существующие разделы:</h3>
+                <div id="sectionsList"></div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Добавление контента -->
+        <div id="admin-add" class="admin-tab-content">
+            <div class="add-form">
+                <h3>➕ Добавить новое заболевание</h3>
+                <div class="form-group">
+                    <label>Эмодзи:</label>
+                    <input type="text" id="new-disease-emoji" placeholder="Например: 🩺" value="🩺">
+                </div>
+                <div class="form-group">
+                    <label>Название болезни:</label>
+                    <input type="text" id="new-disease-title" placeholder="Например: Артрит">
+                </div>
+                <div class="form-group">
+                    <label>Краткое описание:</label>
+                    <textarea id="new-disease-desc" placeholder="Краткое описание для карточки"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Подробное описание (HTML):</label>
+                    <textarea id="new-disease-details" placeholder="Подробное описание с симптомами..."></textarea>
+                </div>
+                <button class="btn" onclick="addNewDisease()">💾 Добавить болезнь</button>
+            </div>
+            <div class="add-form">
+                <h3>➕ Добавить новый продукт</h3>
+                <div class="form-group">
+                    <label>Раздел:</label>
+                    <select id="new-product-section"></select>
+                </div>
+                <div class="form-group">
+                    <label>Эмодзи:</label>
+                    <input type="text" id="new-product-emoji" placeholder="Например: 🥕" value="🥕">
+                </div>
+                <div class="form-group">
+                    <label>Название:</label>
+                    <input type="text" id="new-product-title" placeholder="Например: Морковь">
+                </div>
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <textarea id="new-product-desc" placeholder="Описание пользы"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Бейдж (текст):</label>
+                        <input type="text" id="new-product-badge" value="ГИ=15 — полезно">
+                    </div>
+                    <div class="form-group">
+                        <label>Цвет бейджа:</label>
+                        <select id="new-product-color">
+                            <option value="green">🟢 Зеленый</option>
+                            <option value="yellow">🟡 Желтый</option>
+                            <option value="red">🔴 Красный</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="addNewProduct()">💾 Добавить</button>
+            </div>
+        </div>
+
+        <!-- Вкладка: Управление админами -->
+        <div id="admin-admins" class="admin-tab-content">
+            <div class="max-admins-warning" id="maxAdminsWarning" style="display: none;">
+                ⚠️ Достигнут лимит администраторов (максимум 3, кроме Екатерины)
+            </div>
+            <div class="requests-list" id="requestsList" style="display: none;">
+                <h3>📨 Заявки на регистрацию</h3>
+                <div id="pendingRequests"></div>
+            </div>
+            <div class="admins-list">
+                <h3>👥 Текущие администраторы:</h3>
+                <div id="adminsList"></div>
+            </div>
+            <div class="add-form" id="permissionsForm" style="display: none;">
+                <h3>🔐 Назначить права администратору</h3>
+                <div class="form-group">
+                    <label>Выберите администратора:</label>
+                    <select id="perm-admin-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>Уровень доступа:</label>
+                    <select id="perm-level" onchange="togglePermSection()">
+                        <option value="full">🔓 Полный доступ</option>
+                        <option value="restricted">🔒 Ограниченный (только добавление в существующие разделы)</option>
+                        <option value="single">🔐 Доступ к одному разделу</option>
+                    </select>
+                </div>
+                <div class="form-group" id="perm-section-select" style="display: none;">
+                    <label>Выберите раздел:</label>
+                    <select id="perm-section"></select>
+                </div>
+                <button class="btn" onclick="setPermissions()">💾 Сохранить права</button>
+            </div>
+        </div>
+
+        <!-- Вкладка: Управление форумом -->
+        <div id="admin-forum" class="admin-tab-content">
+            <div class="add-form">
+                <h3>💬 Модерация форума</h3>
+                <div id="forumMessagesAdmin"></div>
+                <button class="btn" onclick="clearForum()">🗑️ Очистить все сообщения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Форум (добавить в конец .container, перед footer) -->
+<div class="forum-section" id="forum">
+    <div class="forum-header">
+        <h2>💬 Остались вопросы?</h2>
+        <div class="forum-tabs">
+            <button class="forum-tab active" onclick="switchForumTab('all')">Все</button>
+            <button class="forum-tab" onclick="switchForumTab('pending')">На модерации</button>
+        </div>
+    </div>
+    <div class="forum-messages" id="forumMessages"></div>
+    <div class="forum-form">
+        <input type="text" id="forumNick" placeholder="Ваш ник (только буквы, без цифр)" maxlength="30">
+        <textarea id="forumMessage" placeholder="Ваш вопрос... (Мы не консультируем по заболеваниям, только по рациону и содержанию)"></textarea>
+        <button onclick="postForumMessage()">Отправить</button>
+    </div>
+    <div class="forum-note">⚠️ Мы не даём медицинских консультаций. Только вопросы по питанию и уходу.</div>
+</div>
+
+<!-- Кнопка консоли для админов (добавить в header) -->
+<button class="admin-console-btn" id="adminConsoleBtn" onclick="openAdminPanel()">🖥️ Консоль</button>
+
+<!-- Чат для админов -->
+<div class="admin-chat" id="adminChat" style="display: none;">
+    <h3>💬 Чат администраторов</h3>
+    <div class="admin-chat-messages" id="adminChatMessages"></div>
+    <div class="admin-chat-input">
+        <input type="text" id="adminChatInput" placeholder="Ваше сообщение...">
+        <button onclick="sendAdminChat()">Отправить</button>
+        <button onclick="toggleAdminChatSound()" id="chatSoundBtn">🔊 Звук вкл</button>
+    </div>
+</div>
+
+<script>
+    // ===== ДАННЫЕ АДМИНОВ (сохраняются в localStorage) =====
+    let admins = JSON.parse(localStorage.getItem('degucms_admins')) || [
+        { id: 1, name: 'Екатерина', login: 'Екатерина', password: '4708Ekaterina', role: 'owner', permissions: { fullAccess: true } }
+    ];
+    let pendingRequests = JSON.parse(localStorage.getItem('degucms_requests')) || [];
+    let currentAdmin = null;
+    let recoverTargetAdmin = null;
+    let viewMode = false;
+    let forumMessages = JSON.parse(localStorage.getItem('degucms_forum')) || [
+        { id: '1', nick: 'Админ', text: 'Добро пожаловать на форум! Задавайте вопросы по питанию и уходу.', date: new Date().toLocaleString(), pending: false }
+    ];
+    let adminChatMessages = JSON.parse(localStorage.getItem('degucms_chat')) || [];
+    let customSections = JSON.parse(localStorage.getItem('degucms_sections')) || [];
+    let unreadForumMessages = JSON.parse(localStorage.getItem('degucms_unread')) || [];
+    let chatSoundEnabled = true;
+
+    function saveAdmins() { localStorage.setItem('degucms_admins', JSON.stringify(admins)); }
+    function saveRequests() { localStorage.setItem('degucms_requests', JSON.stringify(pendingRequests)); }
+    function saveForum() { localStorage.setItem('degucms_forum', JSON.stringify(forumMessages)); }
+    function saveChat() { localStorage.setItem('degucms_chat', JSON.stringify(adminChatMessages)); }
+    function saveSections() { localStorage.setItem('degucms_sections', JSON.stringify(customSections)); }
+    function saveUnread() { localStorage.setItem('degucms_unread', JSON.stringify(unreadForumMessages)); }
+
+    // ===== ФУНКЦИИ АДМИН-ПАНЕЛИ =====
+    function showLoginModal() {
+        if (currentAdmin && viewMode) {
+            viewMode = false;
+            updateAdminConsoleButton();
+            return;
+        }
+        if (currentAdmin && !viewMode) {
+            closeAdminPanel();
+            return;
+        }
+        document.getElementById('loginModal').classList.add('show');
+    }
+
+    function switchLoginTab(tab, event) {
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        if (event) event.target.classList.add('active');
+        document.getElementById('login-form').classList.add('hide');
+        document.getElementById('register-form').classList.add('hide');
+        document.getElementById('recover-form').classList.add('hide');
+        if (tab === 'login') document.getElementById('login-form').classList.remove('hide');
+        else if (tab === 'register') {
+            document.getElementById('register-form').classList.remove('hide');
+            document.getElementById('registerSuccess').style.display = 'none';
+            document.getElementById('registerError').style.display = 'none';
+        }
+    }
+
+    function showRecoverForm() {
+        document.getElementById('login-form').classList.add('hide');
+        document.getElementById('register-form').classList.add('hide');
+        document.getElementById('recover-form').classList.remove('hide');
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        const loginTab = Array.from(document.querySelectorAll('.login-tab')).find(t => t.textContent.includes('Вход'));
+        if (loginTab) loginTab.classList.add('active');
+        document.getElementById('recover-step1').style.display = 'block';
+        document.getElementById('recover-step2').style.display = 'none';
+        document.getElementById('recoverError').style.display = 'none';
+        document.getElementById('recoverSuccess').style.display = 'none';
+        document.getElementById('recover-login').value = '';
+    }
+
+    function checkLogin() {
+        const login = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const admin = admins.find(a => a.login === login && a.password === password);
+        if (admin) {
+            currentAdmin = admin;
+            document.getElementById('loginModal').classList.remove('show');
+            document.getElementById('adminNameDisplay').textContent = admin.name;
+            viewMode = false;
+            updateAdminConsoleButton();
+            openAdminPanel();
+            document.getElementById('adminChat').style.display = 'block';
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+
+    function registerRequest() {
+        const otherAdmins = admins.filter(a => a.name !== 'Екатерина');
+        if (otherAdmins.length >= 3) {
+            document.getElementById('registerError').textContent = '❌ Достигнут лимит администраторов (максимум 3, кроме Екатерины)';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        const name = document.getElementById('register-name').value;
+        const login = document.getElementById('register-login').value;
+        const password = document.getElementById('register-password').value;
+        if (!name || !login || !password) {
+            document.getElementById('registerError').textContent = '❌ Заполните все поля';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        if (login === 'Екатерина') {
+            document.getElementById('registerError').textContent = '❌ Этот логин зарезервирован';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        if (!/^[а-яА-ЯёЁa-zA-Z]+$/.test(login)) {
+            document.getElementById('registerError').textContent = '❌ Логин может содержать только буквы (без цифр)';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        if (login.length < 3) {
+            document.getElementById('registerError').textContent = '❌ Логин минимум 3 символа';
+            return;
+        }
+        if (password.length < 4 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            document.getElementById('registerError').textContent = '❌ Пароль должен быть минимум 4 символа, содержать буквы и цифры';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        const simple = ['1234', '12345', '123456', 'qwerty', 'password', '1111', '0000'];
+        if (simple.includes(password.toLowerCase())) {
+            document.getElementById('registerError').textContent = '❌ Слишком простой пароль';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        if (admins.some(a => a.login === login)) {
+            document.getElementById('registerError').textContent = '❌ Такой логин уже существует';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        pendingRequests.push({ id: Date.now().toString(), name, login, password, date: new Date().toLocaleString() });
+        saveRequests();
+        document.getElementById('registerSuccess').style.display = 'block';
+        document.getElementById('registerError').style.display = 'none';
+        document.getElementById('register-name').value = '';
+        document.getElementById('register-login').value = '';
+        document.getElementById('register-password').value = '';
+        if (currentAdmin) updateRequestsList();
+    }
+
+    function checkRecoverLogin() {
+        const login = document.getElementById('recover-login').value;
+        const admin = admins.find(a => a.login === login);
+        if (admin) {
+            recoverTargetAdmin = admin;
+            document.getElementById('recover-step1').style.display = 'none';
+            document.getElementById('recover-step2').style.display = 'block';
+            document.getElementById('recoverError').style.display = 'none';
+        } else {
+            document.getElementById('recoverError').textContent = '❌ Логин не найден';
+            document.getElementById('recoverError').style.display = 'block';
+        }
+    }
+
+    function setNewPassword() {
+        const newPassword = document.getElementById('recover-new-password').value;
+        if (newPassword.length < 4) {
+            document.getElementById('recoverError').textContent = '❌ Пароль должен быть минимум 4 символа';
+            document.getElementById('recoverError').style.display = 'block';
+            return;
+        }
+        recoverTargetAdmin.password = newPassword;
+        saveAdmins();
+        document.getElementById('recoverSuccess').textContent = '✅ Пароль успешно изменен!';
+        document.getElementById('recoverSuccess').style.display = 'block';
+        document.getElementById('recoverError').style.display = 'none';
+        setTimeout(() => switchLoginTab('login'), 2000);
+    }
+
+    function openAdminPanel() {
+        document.getElementById('adminPanel').classList.add('show');
+        document.body.style.overflow = 'hidden';
+        buildAdminTree();
+        updateSectionsList();
+        updateProductSectionsSelect();
+        updateAdminsList();
+        updateRequestsList();
+    }
+
+    function closeAdminPanel() {
+        document.getElementById('adminPanel').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function toggleViewMode() {
+        viewMode = true;
+        closeAdminPanel();
+        updateAdminConsoleButton();
+    }
+
+    function switchAdminTab(tabName) {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(`admin-${tabName}`).classList.add('active');
+        if (tabName === 'edit') buildAdminTree();
+        if (tabName === 'sections') updateSectionsList();
+        if (tabName === 'add') updateProductSectionsSelect();
+        if (tabName === 'admins') { updateAdminsList(); updateRequestsList(); }
+        if (tabName === 'forum') renderForumAdmin();
+    }
+
+    function buildAdminTree() {
+        const tree = document.getElementById('adminTree');
+        tree.innerHTML = '<p>Древовидный редактор будет доступен после добавления контента</p>';
+    }
+
+    function updateSectionsList() {
+        const list = document.getElementById('sectionsList');
+        list.innerHTML = '<p>Стандартные разделы: Овощи, Фрукты, Ягоды, Травы, Деревья, Цветы, Белок</p>';
+        if (customSections.length) {
+            list.innerHTML += '<h4>Пользовательские разделы:</h4>';
+            customSections.forEach(s => {
+                list.innerHTML += `<div class="section-card"><span>${s.emoji} ${s.name} (${s.id})</span> <button class="delete-section" onclick="deleteSection('${s.id}')">×</button></div>`;
+            });
+        }
+    }
+
+    function updateProductSectionsSelect() {
+        const select = document.getElementById('new-product-section');
+        select.innerHTML = '';
+        const sections = ['vegetables', 'fruits', 'berries', 'herbs', 'trees', 'flowers', 'protein'];
+        sections.forEach(s => select.innerHTML += `<option value="${s}">${s}</option>`);
+        customSections.forEach(s => select.innerHTML += `<option value="${s.id}">${s.emoji} ${s.name}</option>`);
+    }
+
+    function updateAdminsList() {
+        const list = document.getElementById('adminsList');
+        list.innerHTML = '';
+        admins.forEach(a => {
+            list.innerHTML += `<div class="admin-card"><span>${a.name} (${a.login}) ${a.role === 'owner' ? '👑' : ''}</span>${a.id !== 1 && currentAdmin?.id === 1 ? `<button onclick="removeAdmin(${a.id})">×</button>` : ''}</div>`;
+        });
+        if (currentAdmin?.id === 1) {
+            document.getElementById('permissionsForm').style.display = 'block';
+            const select = document.getElementById('perm-admin-select');
+            select.innerHTML = '<option value="">Выберите админа</option>';
+            admins.filter(a => a.id !== 1).forEach(a => select.innerHTML += `<option value="${a.id}">${a.name}</option>`);
+        }
+    }
+
+    function updateRequestsList() {
+        const list = document.getElementById('pendingRequests');
+        const container = document.getElementById('requestsList');
+        if (pendingRequests.length === 0) {
+            container.style.display = 'none';
+            document.getElementById('pendingRequestsBadge').style.display = 'none';
+            return;
+        }
+        container.style.display = 'block';
+        document.getElementById('pendingRequestsBadge').style.display = 'inline';
+        list.innerHTML = '';
+        pendingRequests.forEach(r => {
+            list.innerHTML += `<div class="request-card"><span>${r.name} (${r.login})</span><button onclick="approveRequest('${r.id}')">✅</button><button onclick="rejectRequest('${r.id}')">❌</button></div>`;
+        });
+    }
+
+    function approveRequest(id) {
+        if (admins.filter(a => a.name !== 'Екатерина').length >= 3) {
+            showNotification('❌ Лимит администраторов');
+            return;
+        }
+        const req = pendingRequests.find(r => r.id === id);
+        if (!req) return;
+        admins.push({ id: Date.now(), name: req.name, login: req.login, password: req.password, role: 'admin', permissions: { restricted: true } });
+        pendingRequests = pendingRequests.filter(r => r.id !== id);
+        saveAdmins();
+        saveRequests();
+        updateAdminsList();
+        updateRequestsList();
+        showNotification('✅ Админ добавлен');
+    }
+
+    function rejectRequest(id) {
+        pendingRequests = pendingRequests.filter(r => r.id !== id);
+        saveRequests();
+        updateRequestsList();
+        showNotification('❌ Заявка отклонена');
+    }
+
+    function removeAdmin(id) {
+        if (!confirm('Удалить администратора?')) return;
+        admins = admins.filter(a => a.id !== id);
+        saveAdmins();
+        updateAdminsList();
+        showNotification('🗑️ Админ удален');
+    }
+
+    function togglePermSection() {
+        const level = document.getElementById('perm-level').value;
+        document.getElementById('perm-section-select').style.display = level === 'single' ? 'block' : 'none';
+    }
+
+    function setPermissions() {
+        const adminId = document.getElementById('perm-admin-select').value;
+        const level = document.getElementById('perm-level').value;
+        const section = document.getElementById('perm-section').value;
+        const admin = admins.find(a => a.id == adminId);
+        if (!admin) return;
+        if (level === 'full') admin.permissions = { fullAccess: true };
+        else if (level === 'restricted') admin.permissions = { restricted: true };
+        else if (level === 'single') admin.permissions = { singleSection: section };
+        saveAdmins();
+        updateAdminsList();
+        showNotification('✅ Права сохранены');
+    }
+
+    function createNewSection() {
+        const emoji = document.getElementById('new-section-emoji').value;
+        const name = document.getElementById('new-section-name').value;
+        const id = document.getElementById('new-section-id').value.toLowerCase().replace(/[^a-z]/g, '');
+        if (!name || !id) { showNotification('❌ Заполните все поля'); return; }
+        if (customSections.some(s => s.id === id)) { showNotification('❌ Такой ID уже есть'); return; }
+        customSections.push({ id, emoji, name });
+        saveSections();
+        updateSectionsList();
+        updateProductSectionsSelect();
+        showNotification('✅ Раздел создан');
+        document.getElementById('new-section-name').value = '';
+        document.getElementById('new-section-id').value = '';
+    }
+
+    function deleteSection(id) {
+        customSections = customSections.filter(s => s.id !== id);
+        saveSections();
+        updateSectionsList();
+        updateProductSectionsSelect();
+        showNotification('🗑️ Раздел удален');
+    }
+
+    function addNewDisease() {
+        showNotification('✅ Функция добавления болезней');
+    }
+
+    function addNewProduct() {
+        showNotification('✅ Функция добавления продуктов');
+    }
+
+    // ===== ФОРУМ =====
+    function renderForum() {
+        const container = document.getElementById('forumMessages');
+        container.innerHTML = forumMessages.map(msg => `
+            <div class="forum-message ${unreadForumMessages.includes(msg.id) ? 'unread' : ''}">
+                <div class="forum-message-header">
+                    <span class="forum-message-nick ${admins.some(a => a.name === msg.nick) ? 'admin' : ''}">${msg.nick}</span>
+                    <span class="forum-message-date">${msg.date}</span>
+                </div>
+                <div class="forum-message-text">${escapeHtml(msg.text)}</div>
+                ${currentAdmin ? `
+                    <div class="forum-message-actions">
+                        <button onclick="deleteForumMessage('${msg.id}')">🗑️</button>
+                        <button onclick="markAsRead('${msg.id}')">👁️</button>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function postForumMessage() {
+        const nick = document.getElementById('forumNick').value.trim();
+        const text = document.getElementById('forumMessage').value.trim();
+        if (!nick || !text) { alert('Заполните ник и сообщение'); return; }
+        if (!/^[а-яА-ЯёЁa-zA-Z]+$/.test(nick)) { alert('Ник только буквы, без цифр'); return; }
+        if (forumMessages.some(m => m.nick === nick && !admins.some(a => a.name === nick))) { alert('Этот ник уже занят'); return; }
+        const newMsg = {
+            id: Date.now().toString(),
+            nick: currentAdmin ? currentAdmin.name : nick,
+            text,
+            date: new Date().toLocaleString(),
+            pending: false
+        };
+        forumMessages.unshift(newMsg);
+        if (currentAdmin) unreadForumMessages.push(newMsg.id);
+        saveForum();
+        saveUnread();
+        renderForum();
+        document.getElementById('forumNick').value = '';
+        document.getElementById('forumMessage').value = '';
+    }
+
+    function deleteForumMessage(id) {
+        if (!currentAdmin) return;
+        forumMessages = forumMessages.filter(m => m.id !== id);
+        unreadForumMessages = unreadForumMessages.filter(uid => uid !== id);
+        saveForum();
+        saveUnread();
+        renderForum();
+    }
+
+    function markAsRead(id) {
+        unreadForumMessages = unreadForumMessages.filter(uid => uid !== id);
+        saveUnread();
+        renderForum();
+    }
+
+    function markAllAsRead() {
+        unreadForumMessages = [];
+        saveUnread();
+        renderForum();
+    }
+
+    function switchForumTab(tab) {
+        document.querySelectorAll('.forum-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        renderForum();
+    }
+
+    function renderForumAdmin() {
+        const container = document.getElementById('forumMessagesAdmin');
+        container.innerHTML = forumMessages.map(msg => `
+            <div><b>${msg.nick}</b> (${msg.date}): ${msg.text} <button onclick="deleteForumMessage('${msg.id}')">🗑️</button></div>
+        `).join('');
+    }
+
+    function clearForum() {
+        if (!confirm('Очистить форум?')) return;
+        forumMessages = [{ id: '1', nick: 'Админ', text: 'Форум очищен', date: new Date().toLocaleString(), pending: false }];
+        saveForum();
+        renderForum();
+        renderForumAdmin();
+    }
+
+    // ===== ЧАТ АДМИНОВ =====
+    function renderAdminChat() {
+        const chatDiv = document.getElementById('adminChatMessages');
+        chatDiv.innerHTML = adminChatMessages.map(msg => `
+            <div class="admin-chat-message"><b>${msg.sender}</b> ${msg.time}: ${escapeHtml(msg.text)}</div>
+        `).join('');
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    function sendAdminChat() {
+        if (!currentAdmin) return;
+        const input = document.getElementById('adminChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const msg = {
+            sender: currentAdmin.name,
+            text,
+            time: new Date().toLocaleTimeString()
+        };
+        adminChatMessages.push(msg);
+        saveChat();
+        renderAdminChat();
+        input.value = '';
+    }
+
+    function toggleAdminChatSound() {
+        chatSoundEnabled = !chatSoundEnabled;
+        document.getElementById('chatSoundBtn').textContent = chatSoundEnabled ? '🔊 Звук вкл' : '🔇 Звук выкл';
+    }
+
+    // ===== УВЕДОМЛЕНИЯ =====
+    function showNotification(msg) {
+        const notif = document.createElement('div');
+        notif.className = 'notification';
+        notif.textContent = msg;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    function updateAdminConsoleButton() {
+        const btn = document.getElementById('adminConsoleBtn');
+        if (currentAdmin && !viewMode) btn.classList.add('visible');
+        else btn.classList.remove('visible');
+    }
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+    document.addEventListener('DOMContentLoaded', () => {
+        renderForum();
+        renderAdminChat();
+        updateAdminConsoleButton();
+        // Добавляем кнопку входа в футер
+        const footer = document.querySelector('footer p:last-child');
+        if (footer) {
+            const btn = document.createElement('button');
+            btn.className = 'admin-login-btn';
+            btn.id = 'adminLoginBtn';
+            btn.onclick = showLoginModal;
+            btn.textContent = '🔑 Вход / Регистрация';
+            footer.appendChild(btn);
+        }
+    });
+</script>
 </body>
 </html>
